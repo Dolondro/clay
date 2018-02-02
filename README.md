@@ -15,123 +15,132 @@ Install via composer
 
 To use Clay, a model should use the ModelTrait trait and implement a method which calls loadData()
 
-    class Model
+```php
+class Model
+{
+    use Downsider\Clay\Model\ModelTrait;
+
+    public $property;
+    ...
+
+    public function __construct(array $data = [])
     {
-        use Downsider\Clay\Model\ModelTrait;
-    
-        public $property;
-        ...
-
-        public function __construct(array $data = [])
-        {
-            $this->loadData($data);
-        }
-
+        $this->loadData($data);
     }
+
+}
+```
 
 The model can then be instantiated, passing data to the constructor
 
-    $data = ["property" => "value", ...];
-    $model = new Model($data);
+```php
+$data = ["property" => "value", ...];
+$model = new Model($data);
 
-    echo $model->property; // outputs "value"
+echo $model->property; // outputs "value"
+```
 
 Data with underscored or spaced keys will be applied to their camel case counterparts:
 
-    $data = [
-        "long_field_name" => ... // will apply to the property "longFieldName"
-        "property name with spaces" => ... // will apply to "propertyNameWithspaces"
-    ];
-
+```php
+$data = [
+    "long_field_name" => ... // will apply to the property "longFieldName"
+    "property name with spaces" => ... // will apply to "propertyNameWithspaces"
+];
+```
 
 ## Object instantiation
 
 If you want a subset of the data to be contained within a second class, you simply need to type-hint the
 supplied argument in a setter
 
-    class Address
+```php
+class Address
+{
+    use Downsider\Clay\Model\ModelTrait;
+
+    public $street;
+    public $city;
+
+    public function __construct(array $data = [])
     {
-        use Downsider\Clay\Model\ModelTrait;
+        $this->loadData($data);
+    }
+}
 
-        public $street;
-        public $city;
+class Customer
+{
+    use Downsider\Clay\Model\ModelTrait;
 
-        public function __construct(array $data = [])
-        {
-            $this->loadData($data);
-        }
+    protected $address;
+
+    public function __construct(array $data = [])
+    {
+        $this->loadData($data);
     }
 
-    class Customer
+    public function setAddress(Address $address)
     {
-        use Downsider\Clay\Model\ModelTrait;
-    
-        protected $address;
-    
-        public function __construct(array $data = [])
-        {
-            $this->loadData($data);
-        }
-    
-        public function setAddress(Address $address)
-        {
-            $this->address = $address;
-        }
-    
+        $this->address = $address;
     }
 
-    $data = [
-        "address": [
-            "street" => "1 test street",
-            "city" => "exampleton"
-        ]
+}
+
+$data = [
+    "address": [
+        "street" => "1 test street",
+        "city" => "exampleton"
     ]
+]
 
-    $customer = new Customer($data);
-    echo $customer->getAddress()->city; // outputs "exampleton"
+$customer = new Customer($data);
+echo $customer->getAddress()->city; // outputs "exampleton"
+```
 
 ## Object collections
 
 The same can be done for an array or collection of objects. Clay looks for an "add" method for that property to
 determine the class to instantiate
 
-    class Customer
+```php
+class Customer
+{
+    use Downsider\Clay\Model\ModelTrait;
+
+    protected $addresses = [];
+
+    public function __construct(array $data = [])
     {
-        use Downsider\Clay\Model\ModelTrait;
-    
-        protected $addresses = [];
-    
-        public function __construct(array $data = [])
-        {
-            $this->loadData($data);
-        }
-    
-        public function setAddresses(array $addresses)
-        {
-            $this->addresses = [];
-            foreach ($addresses as $address) {
-                $this->addAddresses($address));
-            }
-        }
-    
-        public function addAddresses(Address $address)
-        {
-            $this->addresses[] = $address;
-        }
-    
+        $this->loadData($data);
     }
-    
-    $data = [
-        "addresses": [
-            [
-                "street" => "1 Test street",
-                "city" => "Exampleton"
-            ],
-            [
-                "street" => "22 Sample row",
-                "city" => "Testville"
-            ]
+
+    public function setAddresses(array $addresses)
+    {
+        $this->addresses = [];
+        foreach ($addresses as $address) {
+            $this->addAddresses($address));
+        }
+    }
+
+    public function addAddresses(Address $address)
+    {
+        $this->addresses[] = $address;
+    }
+
+}
+
+$data = [
+    "addresses": [
+        [
+            "street" => "1 Test street",
+            "city" => "Exampleton"
+        ],
+        [
+            "street" => "22 Sample row",
+            "city" => "Testville"
         ]
     ]
-    
-    $customer = new Customer($data);
+]
+
+$customer = new Customer($data);
+```
